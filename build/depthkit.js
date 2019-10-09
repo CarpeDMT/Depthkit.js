@@ -419,7 +419,7 @@ exports.default = Depthkit;
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 exports.Depthkit = undefined;
 
@@ -434,10 +434,89 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 //Make it global
 if (typeof window !== 'undefined' && _typeof(window.THREE) === 'object') {
-  window.Depthkit = _depthkit2.default;
+    window.Depthkit = _depthkit2.default;
 } else {
-  console.warn('[Depthkit.js] It seems like THREE is not included in your code, try including it before Depthkit.js');
+    console.warn('[Depthkit.js] It seems like THREE is not included in your code, try including it before Depthkit.js');
 }
+
+AFRAME.registerComponent('depthkit', {
+    schema: {
+        videoPath: { type: 'string' },
+        metaPath: { type: 'string' },
+        loop: { type: 'boolean', default: false },
+        autoplay: { type: 'boolean', default: false },
+        opacity: { type: 'number', default: 1 },
+        volume: { type: 'number', default: 1 },
+        meshScalar: { type: 'number', default: 4.0 },
+        play: { type: 'boolean', default: false }
+    },
+    init: function init() {
+        this.character = new _depthkit2.default();
+        this.depthkitLoadedFlag = false;
+
+        //--
+        var scope = this;
+        var data = this.data;
+        var el = this.el;
+
+        var geometry = new THREE.BoxGeometry(1, 1, 1);
+
+        var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.0 });
+        material.transparent = true;
+        material.depthWrite = false;
+
+        var cube = new THREE.Mesh(geometry, material);
+
+        el.setObject3D('mesh', cube);
+
+        var depthkitLoadedCallback = this.depthkitLoaded.bind(this);
+
+        console.log(depthkitLoadedCallback);
+        if (data.videoPath && data.metaPath) {
+            this.character.load(data.metaPath, data.videoPath, depthkitLoadedCallback);
+
+            cube.add(this.character);
+        }
+    },
+    depthkitLoaded: function depthkitLoaded() {
+        var data = this.data;
+        console.log(this);
+        this.depthkitLoadedFlag = true;
+        this.character.setOpacity(data.opacity);
+        this.character.setVolume(data.volume);
+        if (data.autoplay) {
+            this.character.play();
+        } else {
+            this.character.stop();
+        }
+
+        this.character.setMeshScalar(data.meshScalar);
+    },
+
+
+    update: function update(previousData) {
+        //Optimise: Check for the change in the new updated data as compared to the previous data
+        var data = this.data;
+        var character = this.character;
+        if (this.depthkitLoadedFlag) {
+
+            if (data.play) {
+                character.play();
+            } else {
+                character.stop();
+            }
+
+            character.setLoop(data.loop);
+            character.setOpacity(data.opacity);
+            character.setVolume(data.volume);
+            character.setMeshScalar(data.meshScalar);
+        }
+    },
+    remove: function remove() {
+        this.el.object3D.remove(this.character);
+    }
+
+});
 
 exports.Depthkit = _depthkit2.default;
 
