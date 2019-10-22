@@ -42,6 +42,8 @@ document.querySelector("#depthkitEntity").setAttribute("depthkit", "play", true)
 
 ### Known issues
 
+- Autoplay is not working on Chrome/Safari because of media protocols in chrome
+
 
 
 
