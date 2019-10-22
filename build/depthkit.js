@@ -439,6 +439,10 @@ if (typeof window !== 'undefined' && _typeof(window.THREE) === 'object') {
     console.warn('[Depthkit.js] It seems like THREE is not included in your code, try including it before Depthkit.js');
 }
 
+/* Made into an A-Frame component
+ *  @author Chaitanya Shah / http://www.chaitanyashah.com
+ */
+
 AFRAME.registerComponent('depthkit', {
     schema: {
         videoPath: { type: 'string' },
@@ -447,7 +451,7 @@ AFRAME.registerComponent('depthkit', {
         autoplay: { type: 'boolean', default: false },
         opacity: { type: 'number', default: 1 },
         volume: { type: 'number', default: 1 },
-        meshScalar: { type: 'number', default: 4.0 },
+        meshScalar: { type: 'number', default: 4, oneOf: [1, 2, 3, 4] },
         play: { type: 'boolean', default: false }
     },
     init: function init() {
@@ -465,17 +469,16 @@ AFRAME.registerComponent('depthkit', {
         material.transparent = true;
         material.depthWrite = false;
 
-        var cube = new THREE.Mesh(geometry, material);
+        var dkMesh = new THREE.Mesh(geometry, material);
 
-        el.setObject3D('mesh', cube);
+        el.setObject3D('mesh', dkMesh);
 
         var depthkitLoadedCallback = this.depthkitLoaded.bind(this);
 
-        console.log(depthkitLoadedCallback);
         if (data.videoPath && data.metaPath) {
             this.character.load(data.metaPath, data.videoPath, depthkitLoadedCallback);
 
-            cube.add(this.character);
+            dkMesh.add(this.character);
         }
     },
     depthkitLoaded: function depthkitLoaded() {
@@ -505,7 +508,6 @@ AFRAME.registerComponent('depthkit', {
             } else {
                 character.stop();
             }
-
             character.setLoop(data.loop);
             character.setOpacity(data.opacity);
             character.setVolume(data.volume);
@@ -513,7 +515,7 @@ AFRAME.registerComponent('depthkit', {
         }
     },
     remove: function remove() {
-        this.el.object3D.remove(this.character);
+        this.el.removeObject3D('mesh');
     }
 
 });
